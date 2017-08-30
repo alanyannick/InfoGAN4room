@@ -206,7 +206,8 @@ def run_InfoGAN(info_reg_discrete=1.0, info_reg_conti=0.5, noise_dim=10,
                 n_conti=2, n_discrete=1, mean=0.0, std=0.5, num_category=10,
                 n_layer=3, n_channel=1, D_featmap_dim=256, G_featmap_dim=1024,
                 n_epoch=2, batch_size=50, use_gpu=True, dis_lr=1e-4,
-                gen_lr=1e-3, n_update_dis=1, n_update_gen=1, update_max=None,save_experiments_folder='',save_model_folder='',model_choice='train'):
+                gen_lr=1e-3, n_update_dis=1, n_update_gen=1, update_max=None,save_experiments_folder='',
+                save_model_folder='',model_choice='train',test_model_name=''):
 
     # init folder
     if not os.path.isdir(save_experiments_folder):
@@ -247,7 +248,7 @@ def run_InfoGAN(info_reg_discrete=1.0, info_reg_conti=0.5, noise_dim=10,
                       n_update_dis, n_update_gen, use_gpu, update_max=update_max
                       )
     else:
-        InfoGAN_Gen_path = save_model_folder + '5_checkpoint.pth'
+        InfoGAN_Gen_path = save_model_folder + test_model_name
         test_InfoGAN(InfoGAN_Gen_path,
                      n_conti, n_discrete, mean, std, num_category, testloader,
                      batch_size, noise_dim, save_experiments_folder,
@@ -288,5 +289,7 @@ def test_InfoGAN(InfoGAN_Gen_path,
 if __name__ == '__main__':
     run_InfoGAN(n_conti=2, n_discrete=1, D_featmap_dim=64, G_featmap_dim=128,
                 n_epoch=50, batch_size=10, update_max=200,use_gpu=True,
-                save_experiments_folder='./experiments/',save_model_folder='./models/',model_choice='test')
+                save_experiments_folder='./experiments/',save_model_folder='./models/',
+                model_choice='test', test_model_name='5_checkpoint.pth')
+
 
