@@ -2,6 +2,9 @@
 This is the git for bedroom experiments 
 
 主代碼在develop branch: [develop](https://github.com/alanyannick/InfoGAN4room/tree/develop)
+拉取codes方式: 在terminal中key in:
+
+```git clone -b develop https://github.com/alanyannick/InfoGAN4room.git```
 
 ## 訓練模型階段:
 運行 /run_InfoGAN.py 並在```run_InfoGAN```中設定參數。
