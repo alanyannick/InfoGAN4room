@@ -31,9 +31,15 @@ def imshow(img):
 
 
 def tensor2im(image_tensor, imtype=np.uint8):
-    image_numpy = image_tensor[0].cpu().float().numpy()
-    image_numpy = (np.transpose(image_numpy, (1, 2, 0)) + 1) / 2.0 * 255.0
-    return image_numpy.astype(imtype)
+    image_total = []
+    for i,data in enumerate(image_tensor):
+        image_numpy = image_tensor[i].cpu().float().numpy()
+        image_numpy = (np.transpose(image_numpy, (1, 2, 0)) + 1) / 2.0 * 255.0
+        image_total.append(image_numpy)
+    image_combine = image_total[0]
+    for i in range(1, 10):
+        image_combine = np.concatenate((image_combine, image_total[i]), axis=1)
+    return image_combine.astype(imtype)
 
 def load_dataset(batch_size=10, download=True):
     """
@@ -201,13 +207,12 @@ def train_InfoGAN(InfoGAN_Dis, InfoGAN_Gen, D_criterion, G_criterion,
         print('Finished Training')
 
 
-
 def run_InfoGAN(info_reg_discrete=1.0, info_reg_conti=0.5, noise_dim=10,
                 n_conti=2, n_discrete=1, mean=0.0, std=0.5, num_category=10,
                 n_layer=3, n_channel=1, D_featmap_dim=256, G_featmap_dim=1024,
                 n_epoch=2, batch_size=50, use_gpu=True, dis_lr=1e-4,
                 gen_lr=1e-3, n_update_dis=1, n_update_gen=1, update_max=None,save_experiments_folder='',
-                save_model_folder='',model_choice='train',test_model_name=''):
+                save_model_folder='',model_choice='train',):
 
     # init folder
     if not os.path.isdir(save_experiments_folder):
@@ -247,49 +252,13 @@ def run_InfoGAN(info_reg_discrete=1.0, info_reg_conti=0.5, noise_dim=10,
                       n_epoch, batch_size, noise_dim,save_experiments_folder,save_model_folder,
                       n_update_dis, n_update_gen, use_gpu, update_max=update_max
                       )
-    else:
-        InfoGAN_Gen_path = save_model_folder + test_model_name
-        test_InfoGAN(InfoGAN_Gen_path,
-                     n_conti, n_discrete, mean, std, num_category, testloader,
-                     batch_size, noise_dim, save_experiments_folder,
-                     use_gpu=True)
 
-
-def test_InfoGAN(InfoGAN_Gen_path,
-                  n_conti, n_discrete, mean, std, num_category, testloader,
-                  batch_size, noise_dim,save_experiments_folder,
-                  use_gpu=True):
-    InfoGAN_Gen = torch.load(InfoGAN_Gen_path)
-    """train InfoGAN and print out the losses for D and G"""
-    for i, data in enumerate(testloader, 0):
-            # i, data  -> index 0,  trainloader[0][0]
-            # get the inputs from true distribution
-            true_inputs, lab = data
-            true_inputs = Variable(true_inputs)
-            if use_gpu:
-                true_inputs = true_inputs.cuda()
-
-            # get inputs (noises and codes) for Generator
-            noises = Variable(gen_noise(batch_size, n_dim=noise_dim))
-            conti_codes = Variable(gen_conti_codes(batch_size, n_conti,
-                                                   mean, std))
-            discr_codes = Variable(gen_discrete_code(batch_size, n_discrete,
-                                                     num_category))
-            if use_gpu:
-                noises = noises.cuda()
-                conti_codes = conti_codes.cuda()
-                discr_codes = discr_codes.cuda()
-
-            # generate fake images
-            gen_inputs = torch.cat((noises, conti_codes, discr_codes), 1)
-            fake_inputs = InfoGAN_Gen(gen_inputs)
-            fake_image = tensor2im(fake_inputs.data)
-            cv2.imwrite(save_experiments_folder + str(i) + '.jpg', fake_image)
 
 if __name__ == '__main__':
-    run_InfoGAN(n_conti=2, n_discrete=1, D_featmap_dim=64, G_featmap_dim=128,
-                n_epoch=50, batch_size=10, update_max=200,use_gpu=True,
-                save_experiments_folder='./experiments/',save_model_folder='./models/',
-                model_choice='test', test_model_name='5_checkpoint.pth')
+    run_InfoGAN(n_conti=2, n_discrete=1, D_featmap_dim=64, G_featmap_dim=128,batch_size=10,
+                # revise the following to control training process
+                n_epoch=10, update_max=5000,use_gpu=True,
+                # 10 x 500 = 5000 iretation
+                save_experiments_folder='./experiments/',save_model_folder='./models/', model_choice='train')
 
 
